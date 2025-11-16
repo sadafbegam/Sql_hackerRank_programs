@@ -1,0 +1,27 @@
+  SELECT
+    MIN(start_date),
+    MAX(end_date)
+FROM
+    (
+        SELECT
+            start_date,
+            ROW_NUMBER() OVER (ORDER BY start_date) as rn1
+        FROM Projects
+        WHERE start_date NOT IN (SELECT end_date FROM Projects)
+    ) AS StartDays
+JOIN
+    (
+        SELECT
+            end_date,
+            ROW_NUMBER() OVER (ORDER BY end_date) as rn2
+        FROM Projects
+        WHERE end_date NOT IN (SELECT start_date FROM Projects)
+    ) AS EndDays
+ON
+    StartDays.rn1 = EndDays.rn2
+GROUP BY
+    EndDays.rn2
+ORDER BY
+    DATEDIFF(MAX(end_date), MIN(start_date)),
+    MIN(start_date);
+  
